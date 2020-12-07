@@ -1,0 +1,27 @@
+from bs4 import BeautifulSoup
+import requests
+#imports modules necessary for webscraping
+userstock = input("Enter the desired stock symbol: ")
+userurl = f"https://finance.yahoo.com/quote/{userstock}/options?p={userstock}"
+r = requests.get(userurl) 
+#takes the stock sybmol as a user input then sends an html request to the site
+#based on the given stock symbol
+soup = BeautifulSoup(r.content, 'html5lib')
+#imports site html data from stock options' webpage
+optionlist = soup.find_all("select", {"class": \
+                                      "Fz(s) H(25px) Bd Bdc($seperatorColor)"})
+print(optionlist)
+'''
+possibleyears = ["2021", "2022", "2023"]
+possmonth2021 = ["January 2021", "February 2021", "March 2021", "April 2021",
+                 "June 2021", "July 2021", "September 2021"]
+possmonth2022 = ["January 2022"]
+useryear = input(f"Choose desired option expiry year from choices provided\
+                 below.\n{possibleyears}\nYear: ")
+
+checkdate = "January 20, 2023"
+if checkdate in optionlist:
+    print("2023 option exists.")
+else:
+    print("2023 option does not exist.")
+'''
