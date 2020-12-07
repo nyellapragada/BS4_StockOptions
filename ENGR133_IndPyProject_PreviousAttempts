@@ -1,0 +1,103 @@
+'''
+##inquirer module, list user chooses
+questions = [inquirer.List('size',
+                message = "Choose a year:",
+                choices = ["2021", "2022", "2023"],
+            ),
+]
+answers = inquirer.prompt(questions)
+print answers["size"]
+'''
+'''
+##Google Finance
+stockexchange = input("For NASDAQ, enter NQ; for NYSE, enter NYSE; for Dow\
+                      Jones, enter DJX:")
+                      
+if stockexchange == "NQ":
+    userstsymb = input("Enter the stock symbol:")
+    userurl = f"https://finance.yahoo.com/quote/{userstsymb}:NASDAQ"
+    print(userurl)
+elif stockexchange == "NYSE":
+    userstsymb = input("Enter the stock symbol:")
+    userurl = f"https://finance.yahoo.com/quote/{userstsymb}:NYSENY"
+    print(userurl)
+elif stockexchange == "DJX":
+    userstsymb = input("Enter the stock symbol:")
+    userurl = f"https://finance.yahoo.com/quote/{userstsymb}:INDEXDJX"
+    print(userurl)
+else:
+    print("Error, please choose either NASDAQ, NYSE, or Dow Jones.")
+'''    
+'''
+###What the hell
+import re
+from robobrowser import RoboBrowser
+
+# Browse to Genius
+browser = RoboBrowser(history=True)
+browser.open('http://genius.com/')
+
+# Search for Porcupine Tree
+form = browser.get_form(action='/search')
+form                # <RoboForm q=>
+form['q'].value = 'porcupine tree'
+browser.submit_form(form)
+
+# Look up the first song
+songs = browser.select('.song_link')
+browser.follow_link(songs[0])
+lyrics = browser.select('.lyrics')
+lyrics[0].text      # \nHear the sound of music ...
+
+# Back to results page
+browser.back()
+
+# Look up my favorite song
+song_link = browser.get_link('trains')
+browser.follow_link(song_link)
+
+# Can also search HTML using regex patterns
+lyrics = browser.find(class_=re.compile(r'\blyrics\b'))
+lyrics.text         # \nTrain set and match spied under the blind...
+
+###second attempt
+import requests 
+from bs4 import BeautifulSoup as bsoup
+import urllib.request
+import re
+
+userurl = input("Enter the full web address for the website: ")
+
+def getLinks(userurl):
+    html_page = urllib.request.urlopen(userurl)
+    soup = bsoup(html_page, "html.parser")
+    links = []
+
+    for link in soup.findAll('a', attrs={'href': re.compile("^http://")}):
+        links.append(link.get('href'))
+    return links
+
+anchors = getLinks(userurl)
+for anchor in anchors:
+    happens = urllib.request.urlopen(anchor)
+    if happens.getcode() == "404":
+        # Do stuff
+# Click on links and return responses
+countMe = len(anchors)
+
+for anchor in anchors:
+    i = getLinks(anchor)
+    countMe += len(i)
+    happens = urllib.request.urlopen(i)
+    if happens.getcode() == "404":
+        # Do some stuff
+
+print(countMe)
+
+###initial attempt
+URL = "http://www.values.com/inspirational-quotes"
+r = requests.get(URL) 
+  
+soup = BeautifulSoup(r.content, 'html5lib') # If this line causes an error, run 'pip install html5lib' or install html5lib 
+print(soup.prettify()) 
+'''
