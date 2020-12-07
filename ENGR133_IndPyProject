@@ -25,3 +25,36 @@ if checkdate in optionlist:
 else:
     print("2023 option does not exist.")
 '''
+
+###########
+# Get the available options dates first and then ask the user 
+# for the date to pull the options for:
+###########
+possibleDates = []
+dateTimestamp = []
+
+for row in soup.find("select", {"class": "Fz(s) H(25px) Bd Bdc($seperatorColor)"}):
+    possibleDates.append(row.string)
+    dateTimestamp.append(row.attrs['value'])
+    print(row.string)    
+    print(row.attrs['value'])
+    print('-----------------------------------')
+
+
+print("Select available date for getting the getting the options for the provided stock symbol.")
+count = 0  
+for dates in possibleDates:
+    count = count + 1
+    print('For ' + dates + ' enter:', count)
+    
+userDateOption = input("Enter optin date:")
+optionDate = dateTimestamp[int(userDateOption) - 1]
+
+optionsUrl = f"https://finance.yahoo.com/quote/{userstock}/options?date={optionDate}"
+r = requests.get(userurl) 
+soup = BeautifulSoup(r.content, 'html5lib')
+#imports site html data from stock options' webpage
+callsTable = soup.find_all("table", {"class": "calls W(100%) Pos(r) Bd(0) Pt(0) list-options"})
+print(callsTable)
+
+
