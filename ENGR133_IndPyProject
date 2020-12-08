@@ -2,59 +2,101 @@ from bs4 import BeautifulSoup
 import requests
 #imports modules necessary for webscraping
 userstock = input("Enter the desired stock symbol: ")
+#userstock = "t"
 userurl = f"https://finance.yahoo.com/quote/{userstock}/options?p={userstock}"
 r = requests.get(userurl) 
 #takes the stock sybmol as a user input then sends an html request to the site
 #based on the given stock symbol
 soup = BeautifulSoup(r.content, 'html5lib')
 #imports site html data from stock options' webpage
-optionlist = soup.find_all("select", {"class": \
+optionList = soup.find("select", {"class": \
                                       "Fz(s) H(25px) Bd Bdc($seperatorColor)"})
-print(optionlist)
-'''
-possibleyears = ["2021", "2022", "2023"]
-possmonth2021 = ["January 2021", "February 2021", "March 2021", "April 2021",
-                 "June 2021", "July 2021", "September 2021"]
-possmonth2022 = ["January 2022"]
-useryear = input(f"Choose desired option expiry year from choices provided\
-                 below.\n{possibleyears}\nYear: ")
-
-checkdate = "January 20, 2023"
-if checkdate in optionlist:
-    print("2023 option exists.")
-else:
-    print("2023 option does not exist.")
-'''
-
-###########
-# Get the available options dates first and then ask the user 
-# for the date to pull the options for:
-###########
+#imports possible option dates data for the stock
 possibleDates = []
 dateTimestamp = []
-
-for row in soup.find("select", {"class": "Fz(s) H(25px) Bd Bdc($seperatorColor)"}):
+#sets up two empty lists to store dates and their milliseconds time stamps
+for row in optionList:
     possibleDates.append(row.string)
     dateTimestamp.append(row.attrs['value'])
-    print(row.string)    
-    print(row.attrs['value'])
-    print('-----------------------------------')
-
-
-print("Select available date for getting the getting the options for the provided stock symbol.")
+#creates a for loop that populates the empty lists with possible option dates data
+print("Available option expiry dates are:")
 count = 0  
+#initializes the counting variable
 for dates in possibleDates:
     count = count + 1
     print('For ' + dates + ' enter:', count)
-    
-userDateOption = input("Enter optin date:")
+#creates a for loop that prints each available date for user to choose from
+userDateOption = input("Select an option expiry date: ")
+#userDateOption = "15"
+#prompts the user to select a date, input stored as userDateOption
 optionDate = dateTimestamp[int(userDateOption) - 1]
-
+#redefines timestamp associated with selected expiry date as counting variable
+#starts at 1
 optionsUrl = f"https://finance.yahoo.com/quote/{userstock}/options?date={optionDate}"
 r = requests.get(userurl) 
 soup = BeautifulSoup(r.content, 'html5lib')
 #imports site html data from stock options' webpage
 callsTable = soup.find_all("table", {"class": "calls W(100%) Pos(r) Bd(0) Pt(0) list-options"})
-print(callsTable)
-
-
+#imports call data for chosen stock option
+#print(callsTable)
+optionName = []
+optionTradeTime = []
+optionStrikePrice = []
+optionAskPrice = []
+optionPercentChange = []
+optionVolatility = []
+strikePrice = 29.64
+#sets up necessary empty lists for organizing the imported data
+for row in callsTable:
+    allOptionsData = row.find("tbody")
+    for tr in allOptionsData:
+        allTrData = tr.find_all("td")
+        '''
+        for span in tr.find("span", {"class":"Trsdu(0.3s) Fw(b) Fz(36px) Mb(-4px) D(ib)"}):
+            strikePrice.append(span.string)
+            strikePriceCount = 1
+            while strikePriceCount <= 1:
+                strikePrice.append(span.string)
+                strikePriceCount += 1
+        '''
+        for td in tr.find("td"):
+            optionName.append(td.string)
+        for td in tr.find("td", {"class": "data-col1 Ta(end) Pstart(7px)"}):
+            optionTradeTime.append(td.string)
+        for td in tr.find("td", {"class": "data-col2 Ta(end) Px(10px)"}):
+            optionStrikePrice.append(float(td.string))
+        for th in tr.find("td", {"data-col5 Ta(end) Pstart(7px)"}):
+            optionAskPrice.append(float(th.string))
+        for th in tr.find_all("th", {"span": "Trsdu(0.3s) "}):
+            optionPercentChange.append(float(th.string))
+        for td in tr.find_all("td", {"class": "data-col10 Ta(end) Pstart(7px) Pend(6px) Bdstartc(t)"}):
+            optionVolatility.append(float(th.string))
+#imports each contract's details like the ask price and %change and assigns 
+#them to the appropriate empty list
+#print(optionName)
+#print(optionTradeTime)
+print(optionStrikePrice)
+print(optionAskPrice)
+#print(optionPercentChange)
+#print(optionVolatility)
+print("Please choose your desired portfolio:")
+print("For options with the highest intrinsic value, enter 'int'")
+print("For option with the most potential value, enter 'most'.")
+orgChoice = input("Organization method: ")
+#allows user choice of criteria for which to determine best options
+if orgChoice == 'int':
+    bestOptName = []
+    bestOptValue = []
+    while len(bestOptName) <= 1:
+        for i in optionStrikePrice:
+            if i > strikePrice:
+                continue
+            else:
+                bestOptValue.append(round(strikePrice - i, 2))
+                bestValue = max(bestOptValue)
+                x = bestOptValue.index(bestValue)
+                bestOptName.append(optionName[x])
+#elif orgChoice == 'most':
+else:
+    print("Error, please rerun program and choose from given options.")
+print(bestOptName)
