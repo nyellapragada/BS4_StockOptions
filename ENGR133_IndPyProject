@@ -1,7 +1,6 @@
 #imports modules necessary for webscraping
 from bs4 import BeautifulSoup
 import requests
-import os
 
 #takes the stock sybmol as a user input then sends an html request to the site
 #based on the given stock symbol
@@ -40,7 +39,7 @@ possibleDates, dateTimestamp = importDates(optionList)
 
 #defines a function that outputs the possible dates for the user to choose from
 def showPossibleDates(possibleDates):
-        print("Available option expiry dates are:")
+        print("\nAvailable option expiry dates are:")
         #initializes the counting variable
         count = 0  
         #runs a for loop that outputs the dates, formatted properly
@@ -93,35 +92,57 @@ for row in callsTable:
             percent = percent.replace("%", "").strip()
             optionVolatility.append(float(percent))
 
+#calculates the current cost to buy option contract, minimum 100 shares
+initialCost = []
+for i in optionAskPrice:
+    initialCost.append(i*100)
+
 #allows user choice of criteria for which to determine best options
 print("\nPlease choose your desired portfolio:")
 print("For options with the highest intrinsic value, enter 'int'.")
 print("For options with the lowest volatility, enter 'vol'.")
+#takes the criteria choice as a user input
 orgChoice = input("Organization method: ")
+#takes the amount of best options desired as a user input
 n = int(input("Enter the desired amount of best options: "))
 
+#intializes the counting variable
 count = 1
+
+#intializes an empty list in which the indexes of the best options will be
+#stored.
 bestOptValueIndex = []
+#sets up a conditional that determines best stock options based on criteria 
+#chosen
 if orgChoice == 'int':
+    #initializes empty lists for which intrinsic value and index will be stored
     optValues = []
     optValuesRef = []
+    totalProfit = []
+    #provides a description for what intrinsic value actually means
     choicedescription = 'highest intrinsic value'
     choiceoverview = 'These are the options with the highest intrinsic value \
-meaning that of all available options, these are the most profitable when they expire'
+meaning that of all available options, these are the most profitable when they expire.'
+    #runs a for loop that populates both lists with the instric value and profit.
     for i in optionStrikePrice:
         optValues.append(sharePrice - i)
         optValuesRef.append(sharePrice - i)
+        totalProfit.append((sharePrice - i)*100)
+    #runs a while loop that calculates the top n highest intrisic values
     while count <= n:
         index = optValues.index(max(optValues))
         bestOptValueIndex.append(index)
         optValues[index] = 0
         count += 1
 elif orgChoice == 'vol':
+    #initializes empty list for calculating lowest volatilities
     optVol2 = []
+    #provides a description for what lowest volatility means
     choicedescription = 'lowest volatility'
     choiceoverview = 'These are the options with the loewst volatility meaning \
 that of all available options regardless of potential profit or costs, these are\
-the least risky to invest in'
+the least risky to invest in.'
+    #runs a for loop that populates the empty list with the volatilities
     for i in optionVolatility:
         optVol2.append(i)
     while count <= n:
@@ -131,27 +152,38 @@ the least risky to invest in'
         count += 1
 else:
     print("Error, please rerun program and choose from given options.")
+ 
+print(optValuesRef)    
+#clear the screen of all of the previous information
 print(chr(27) + "[2J")
 
-count = 1
-print(f"\nYour top {n} options for {choicedescription} are:")
-for i in bestOptValueIndex:
-    if orgChoice == 'int':
+#defines a function outputOptions() that outputs the best stock options along
+#with all of the relevant information
+def outputOptions(orgChoice, optionName, optValuesRef, optionTradeTime, optionVolatility, initialCost):
+    count = 1
+    print(f"\nYour top {n} options for {choicedescription} are:")
+    for i in bestOptValueIndex:
         Name = optionName[i]
-        Value = optValuesRef[i]
         Date = optionTradeTime[i]
-        print(f"\nOption {count}: {Name}")
-        print(f"Instrinsic Value Per Share: ${Value: 0.2f}")
-        print(f"Last Trade Date: {Date}")
-        count += 1
-    elif orgChoice == 'vol':
-        Name = optionName[i]
-        Value = optionVolatility[i]
-        Date = optionTradeTime[i]
-        print(f"\nOption {count}: {Name}")
-        print(f"Instrinsic Value Per Share: {Value: 0.2f}%")
-        print(f"Last Trade Date: {Date}")
-        count += 1
-    else:   
-        print("Error, this line should never run.")
-print(f"\n{choiceoverview}")
+        Cost = initialCost[i]
+        if orgChoice == 'int':
+            Value = optValuesRef[i]
+            Profit = totalProfit[i]
+            print(f"\nOPTION {count}: {Name}")
+            print(f"\tInstrinsic Value Per Share: ${Value: 0.2f}")
+            print(f"\tTotal Estimated Profit: ${Profit: 0.2f}")
+            print(f"\tLast Trade Date: {Date}")
+            print(f"\tMinimum Cost (100 shares): ${Cost: 0.2f}")
+            count += 1
+        elif orgChoice == 'vol':
+            Value = optionVolatility[i]
+            print(f"\nOPTION {count}: {Name}")
+            print(f"\tInstrinsic Value Per Share: {Value: 0.2f}%")
+            print(f"\tLast Trade Date: {Date}")
+            print(f"\tMinimum Cost (100 shares): ${Cost: 0.2f}")
+            count += 1
+        else:   
+            print("Error, this line should never run.")
+    print(f"\n{choiceoverview}")
+
+outputOptions(orgChoice, optionName, optValuesRef, optionTradeTime, optionVolatility, initialCost)
