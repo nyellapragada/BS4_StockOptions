@@ -70,7 +70,6 @@ callsTable = soup.find_all("table", {"class": "calls W(100%) Pos(r) Bd(0) Pt(0) 
 optionName = []
 optionTradeTime = []
 optionStrikePrice = []
-optionAskPrice = []
 optionPercentChange = []
 optionVolatility = []
 sharePrice = 29.64
@@ -80,15 +79,13 @@ for row in callsTable:
     allOptionsData = row.find("tbody")
     for tr in allOptionsData:
         allTrData = tr.find_all("td")
+        '''
         for td in tr.find("td"):
             optionName.append(td.string)
-        '''
         for td in tr.find("td", {"class": "data-col1 Ta(end) Pstart(7px)"}):
             optionTradeTime.append(td.string)
-        for td in tr.find("td", {"class": "data-col2 Ta(end) Px(10px)"}):
-            optionStrikePrice.append(float(td.string))
-        for th in tr.find("td", {"class": "data-col5 Ta(end) Pstart(7px)"}):
-            optionAskPrice.append(float(th.string))
+        for a in tr.find("a", {"class": "C($linkColor) Fz(s)"}):
+            optionStrikePrice.append(float(a))
         for td in tr.find_all("td", {"class": "data-col7 Ta(end) Pstart(7px)"}):
             optionPercentChange.append(td.string)
             for row in td:
@@ -96,15 +93,13 @@ for row in callsTable:
                 percent = float(percent[0])
                 print(percent)
         '''
-        '''
-        for td in tr.find("td", {"class": "data-col10 Ta(end) Pstart(7px) Pend(6px) Bdstartc(t)"}):
-            allTdData = tr
-            print(allTdData)
-            for row in :
-                optionVolatility.append(float(td.string))
-        '''
+        for td in tr.find_all("td", {"class": "data-col10 Ta(end) Pstart(7px) Pend(6px) Bdstartc(t)"}):
+            print(td)
+            #for row in allTdData:
+                #row.replace("%", " ")
+                #optionVolatility.append(float(.string))
 #debugging
-print(optionName)
+#print(optionName)
 #print(optionTradeTime)
 #print(optionStrikePrice)
 #print(optionAskPrice)
