@@ -19,6 +19,10 @@ userurl = f"https://finance.yahoo.com/quote/{userstock}/options?p={userstock}"
 r = requests.get(userurl) 
 soup = BeautifulSoup(r.content, 'html5lib')
 
+#get the stock price
+stockPrice = (soup.find("span", {"class": \
+                 "Trsdu(0.3s) Fw(b) Fz(36px) Mb(-4px) D(ib)"})).string
+
 #imports possible option dates data for the stock
 optionList = soup.find("select", {"class": \
                                       "Fz(s) H(25px) Bd Bdc($seperatorColor)"})
@@ -121,13 +125,14 @@ count = 1
 #intializes an empty list in which the indexes of the best options will be
 #stored.
 bestOptValueIndex = []
+#initializes empty lists for which intrinsic value and index will be stored
+optValues = []
+optValuesRef = []
+totalProfit = []
+
 #sets up a conditional that determines best stock options based on criteria 
 #chosen
 if orgChoice == 'int':
-    #initializes empty lists for which intrinsic value and index will be stored
-    optValues = []
-    optValuesRef = []
-    totalProfit = []
     #provides a description for what intrinsic value actually means
     choicedescription = 'highest intrinsic value'
     choiceoverview = 'These are the options with the highest intrinsic value \
@@ -167,11 +172,15 @@ else:
 #clears the screen of all of the previous information
 print(chr(27) + "[2J")
 
+
 #defines a function outputOptions() that outputs the best stock options along
 #with all of the relevant information
-def outputOptions(orgChoice, optionName, optValuesRef, optionTradeTime, optionVolatility, initialCost):
+def outputOptions(orgChoice, optionName, optValuesRef, optionTradeTime, optionVolatility, initialCost, stockPrice):
     #initializes counting variable for displaying option number
     count = 1
+    
+    print(f"Current Stock Price : {stockPrice}")
+    
     print(f"\nYour top {n} options for {choicedescription} are:")
     #runs a for loop that prints name, value, profit, last trade date, and
     #minimum upfront cost for each best option case
@@ -205,7 +214,8 @@ def outputOptions(orgChoice, optionName, optValuesRef, optionTradeTime, optionVo
             #under any circumstance as the variable orgChoice has already 
             #been error checked
             print("Error, this line should never run.")
-    print(f"\n{choiceoverview}")
+    print(f"\n{choiceoverview}")    
+
 #references the outputOptions() function which displays best stock options and 
 #relevant information
-outputOptions(orgChoice, optionName, optValuesRef, optionTradeTime, optionVolatility, initialCost)
+outputOptions(orgChoice, optionName, optValuesRef, optionTradeTime, optionVolatility, initialCost, stockPrice)
