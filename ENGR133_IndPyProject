@@ -14,6 +14,8 @@ else:
 
 #imports site html data from stock options' webpage
 userurl = f"https://finance.yahoo.com/quote/{userstock}/options?p={userstock}"
+#this command sends https requests to the given url; requests is a module
+#used in conjunction with bs4
 r = requests.get(userurl) 
 soup = BeautifulSoup(r.content, 'html5lib')
 
@@ -69,24 +71,33 @@ optionTradeTime = []
 optionStrikePrice = []
 optionAskPrice = []
 optionVolatility = []
-sharePrice = 29.64
+sharePrice = callsTable.find("span", {"class": "Trsdu(0.3s) Fw(b) Fz(36px) Mb(-4px) D(ib)"})
+print(sharePrice)
 #imports each contract's details like the ask price and %change and assigns 
 #them to the appropriate empty list
 for row in callsTable:
+    #imports all webpage data for the stock options
     allOptionsData = row.find("tbody")
+    #specifies substring within all webpage data
     for tr in allOptionsData:
         allTrData = tr.find_all("td")
+        #imports name column of all options
         for td in tr.find("td"):
             optionName.append(td.string)
+        #imports last possible trade time for each option
         for td in tr.find("td", {"class": "data-col1 Ta(end) Pstart(7px)"}):
             optionTradeTime.append(td.string)
+        #imports strike price of each option contract
         for a in tr.find("a", {"class": "C($linkColor) Fz(s)"}):
             price = a.string
+            #ensures four digit strike prices are processed properly
             price = price.replace(",", "")
             price = price.strip()
             optionStrikePrice.append(float(price))
+        #imports ask price of each option contract
         for td in tr.find("td", {"class": "data-col5 Ta(end) Pstart(7px)"}):
             optionAskPrice.append(float(td))
+        #imports estimated volatility for each option
         for td in tr.find_all("td", {"class": "data-col10 Ta(end) Pstart(7px) Pend(6px) Bdstartc(t)"}):
             percent = td.string
             percent = percent.replace("%", "").strip()
@@ -108,7 +119,6 @@ n = int(input("Enter the desired amount of best options: "))
 
 #intializes the counting variable
 count = 1
-
 #intializes an empty list in which the indexes of the best options will be
 #stored.
 bestOptValueIndex = []
@@ -145,30 +155,37 @@ the least risky to invest in.'
     #runs a for loop that populates the empty list with the volatilities
     for i in optionVolatility:
         optVol2.append(i)
+    #runs a while loop that calculates the top n lowest volatilites
     while count <= n:
         index = optVol2.index(min(optVol2))
         bestOptValueIndex.append(index)
         optVol2[index] = 100
         count += 1
 else:
+    #error checks user input for portfolio criteria
     print("Error, please rerun program and choose from given options.")
  
-print(optValuesRef)    
-#clear the screen of all of the previous information
+#clears the screen of all of the previous information
 print(chr(27) + "[2J")
 
 #defines a function outputOptions() that outputs the best stock options along
 #with all of the relevant information
 def outputOptions(orgChoice, optionName, optValuesRef, optionTradeTime, optionVolatility, initialCost):
+    #initializes counting variable for displaying option number
     count = 1
     print(f"\nYour top {n} options for {choicedescription} are:")
+    #runs a for loop that prints name, value, profit, last trade date, and
+    #minimum upfront cost for each best option case
     for i in bestOptValueIndex:
+        #references relevant information for each case
         Name = optionName[i]
         Date = optionTradeTime[i]
         Cost = initialCost[i]
         if orgChoice == 'int':
+            #references value and profit relevant to intrinsic value of option
             Value = optValuesRef[i]
             Profit = totalProfit[i]
+            #displays value, profit, date, and cost
             print(f"\nOPTION {count}: {Name}")
             print(f"\tInstrinsic Value Per Share: ${Value: 0.2f}")
             print(f"\tTotal Estimated Profit: ${Profit: 0.2f}")
@@ -176,14 +193,20 @@ def outputOptions(orgChoice, optionName, optValuesRef, optionTradeTime, optionVo
             print(f"\tMinimum Cost (100 shares): ${Cost: 0.2f}")
             count += 1
         elif orgChoice == 'vol':
+            #references volatility relevant to the volatility of each option
             Value = optionVolatility[i]
+            #displays value, profit, date, and cost
             print(f"\nOPTION {count}: {Name}")
             print(f"\tInstrinsic Value Per Share: {Value: 0.2f}%")
             print(f"\tLast Trade Date: {Date}")
             print(f"\tMinimum Cost (100 shares): ${Cost: 0.2f}")
             count += 1
         else:   
+            #obligatory else statement, this print statement should not run 
+            #under any circumstance as the variable orgChoice has already 
+            #been error checked
             print("Error, this line should never run.")
     print(f"\n{choiceoverview}")
-
+#references the outputOptions() function which displays best stock options and 
+#relevant information
 outputOptions(orgChoice, optionName, optValuesRef, optionTradeTime, optionVolatility, initialCost)
