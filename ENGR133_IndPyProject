@@ -71,8 +71,7 @@ optionTradeTime = []
 optionStrikePrice = []
 optionAskPrice = []
 optionVolatility = []
-sharePrice = callsTable.find("span", {"class": "Trsdu(0.3s) Fw(b) Fz(36px) Mb(-4px) D(ib)"})
-print(sharePrice)
+sharePrice = 29.64
 #imports each contract's details like the ask price and %change and assigns 
 #them to the appropriate empty list
 for row in callsTable:
