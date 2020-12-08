@@ -70,7 +70,7 @@ callsTable = soup.find_all("table", {"class": "calls W(100%) Pos(r) Bd(0) Pt(0) 
 optionName = []
 optionTradeTime = []
 optionStrikePrice = []
-optionPercentChange = []
+optionAskPrice = []
 optionVolatility = []
 sharePrice = 29.64
 #imports each contract's details like the ask price and %change and assigns 
@@ -79,62 +79,41 @@ for row in callsTable:
     allOptionsData = row.find("tbody")
     for tr in allOptionsData:
         allTrData = tr.find_all("td")
-        '''
         for td in tr.find("td"):
             optionName.append(td.string)
         for td in tr.find("td", {"class": "data-col1 Ta(end) Pstart(7px)"}):
             optionTradeTime.append(td.string)
         for a in tr.find("a", {"class": "C($linkColor) Fz(s)"}):
             optionStrikePrice.append(float(a))
-        for td in tr.find_all("td", {"class": "data-col7 Ta(end) Pstart(7px)"}):
-            optionPercentChange.append(td.string)
-            for row in td:
-                percent = re.findall(r"[-+]\d*\.\d+", row.string)
-                percent = float(percent[0])
-                print(percent)
-        '''
+        for td in tr.find("td", {"class": "data-col5 Ta(end) Pstart(7px)"}):
+            optionAskPrice.append(float(td))
         for td in tr.find_all("td", {"class": "data-col10 Ta(end) Pstart(7px) Pend(6px) Bdstartc(t)"}):
-            print(td)
-            #for row in allTdData:
-                #row.replace("%", " ")
-                #optionVolatility.append(float(.string))
-#debugging
-#print(optionName)
-#print(optionTradeTime)
-#print(optionStrikePrice)
-#print(optionAskPrice)
-#print(optionPercentChange)
+            percent = td.string
+            percent = percent.replace("%", " ")
+            optionVolatility.append(float(percent))
+
 print(optionVolatility)
-'''
+
 #allows user choice of criteria for which to determine best options
 print("\nPlease choose your desired portfolio:")
 print("For options with the highest intrinsic value, enter 'int'.")
 print("For options with the lowest volatility, enter 'vol'.")
-#orgChoice = input("Organization method: ")
-orgChoice = 'vol'
+print("For options with the greatest upward trend (%change).")
+orgChoice = input("Organization method: ")
+#orgChoice = 'int'
 
+optValues = []
+bestOptValueIndex = []
 if orgChoice == 'int':
-    bestOptName = []
-    bestOptValue = []
+    count = 1
     for i in optionStrikePrice:
-        while len(bestOptName) <= 1:    
-            if i > sharePrice:
-                continue
-            else:
-                bestOptValue.append(round(sharePrice - i, 2))
-                bestValue = max(bestOptValue)
-                x = bestOptValue.index(bestValue)
-                bestOptName.append(optionName[x])
+        optValues.append(round(sharePrice - i, 2))
+    while count <= 3:
+        index = optValues.index(max(optValues))
+        bestOptValueIndex.append(index)
+        optValues[index] = 0
+        count += 1
 elif orgChoice == 'vol':
-    newVolList = optionVolatility
-    lowVolName = []
-    while len(newVolList) >= (len(newVolList) - 5):
-        lowestVol = min(newVolList)
-        print(lowestVol)
-        lowestVolIndex = newVolList.index(lowestVol)
-        lowVolName.append(optionName[lowestVolIndex])
-        newVolList.remove(lowestVol)
-    print(lowVolName)
+    continue
 else:
     print("Error, please rerun program and choose from given options.")
-'''
