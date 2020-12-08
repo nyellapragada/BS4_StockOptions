@@ -1,12 +1,11 @@
 #imports modules necessary for webscraping
 from bs4 import BeautifulSoup
 import requests
-import re
+import os
 
 #takes the stock sybmol as a user input then sends an html request to the site
 #based on the given stock symbol
-#userstock = input("Enter the desired stock symbol: ")
-userstock = "t"
+userstock = input("Enter the desired stock symbol: ")
 
 #error checks user stock input to make sure it's compatible
 if type(userstock) != str:
@@ -52,8 +51,7 @@ def showPossibleDates(possibleDates):
 #calls the showPossibleDates function and displays possible dates
 showPossibleDates(possibleDates)
 #prompts the user to select a date, input stored as userDateOption
-#userDateOption = input("Select an option expiry date: ")
-userDateOption = "15"
+userDateOption = input("Select an option expiry date: ")
 
 #redefines timestamp associated with selected expiry date as counting variable
 #starts at 1
@@ -84,36 +82,76 @@ for row in callsTable:
         for td in tr.find("td", {"class": "data-col1 Ta(end) Pstart(7px)"}):
             optionTradeTime.append(td.string)
         for a in tr.find("a", {"class": "C($linkColor) Fz(s)"}):
-            optionStrikePrice.append(float(a))
+            price = a.string
+            price = price.replace(",", "")
+            price = price.strip()
+            optionStrikePrice.append(float(price))
         for td in tr.find("td", {"class": "data-col5 Ta(end) Pstart(7px)"}):
             optionAskPrice.append(float(td))
         for td in tr.find_all("td", {"class": "data-col10 Ta(end) Pstart(7px) Pend(6px) Bdstartc(t)"}):
             percent = td.string
-            percent = percent.replace("%", " ")
+            percent = percent.replace("%", "").strip()
             optionVolatility.append(float(percent))
-
-print(optionVolatility)
 
 #allows user choice of criteria for which to determine best options
 print("\nPlease choose your desired portfolio:")
 print("For options with the highest intrinsic value, enter 'int'.")
 print("For options with the lowest volatility, enter 'vol'.")
-print("For options with the greatest upward trend (%change).")
 orgChoice = input("Organization method: ")
-#orgChoice = 'int'
+n = int(input("Enter the desired amount of best options: "))
 
-optValues = []
+count = 1
 bestOptValueIndex = []
 if orgChoice == 'int':
-    count = 1
+    optValues = []
+    optValuesRef = []
+    choicedescription = 'highest intrinsic value'
+    choiceoverview = 'These are the options with the highest intrinsic value \
+meaning that of all available options, these are the most profitable when they expire'
     for i in optionStrikePrice:
-        optValues.append(round(sharePrice - i, 2))
-    while count <= 3:
+        optValues.append(sharePrice - i)
+        optValuesRef.append(sharePrice - i)
+    while count <= n:
         index = optValues.index(max(optValues))
         bestOptValueIndex.append(index)
         optValues[index] = 0
         count += 1
 elif orgChoice == 'vol':
-    continue
+    optVol2 = []
+    choicedescription = 'lowest volatility'
+    choiceoverview = 'These are the options with the loewst volatility meaning \
+that of all available options regardless of potential profit or costs, these are\
+the least risky to invest in'
+    for i in optionVolatility:
+        optVol2.append(i)
+    while count <= n:
+        index = optVol2.index(min(optVol2))
+        bestOptValueIndex.append(index)
+        optVol2[index] = 100
+        count += 1
 else:
     print("Error, please rerun program and choose from given options.")
+print(chr(27) + "[2J")
+
+count = 1
+print(f"\nYour top {n} options for {choicedescription} are:")
+for i in bestOptValueIndex:
+    if orgChoice == 'int':
+        Name = optionName[i]
+        Value = optValuesRef[i]
+        Date = optionTradeTime[i]
+        print(f"\nOption {count}: {Name}")
+        print(f"Instrinsic Value Per Share: ${Value: 0.2f}")
+        print(f"Last Trade Date: {Date}")
+        count += 1
+    elif orgChoice == 'vol':
+        Name = optionName[i]
+        Value = optionVolatility[i]
+        Date = optionTradeTime[i]
+        print(f"\nOption {count}: {Name}")
+        print(f"Instrinsic Value Per Share: {Value: 0.2f}%")
+        print(f"Last Trade Date: {Date}")
+        count += 1
+    else:   
+        print("Error, this line should never run.")
+print(f"\n{choiceoverview}")
