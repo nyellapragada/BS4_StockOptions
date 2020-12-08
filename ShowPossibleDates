@@ -1,0 +1,10 @@
+#defines a function that outputs the possible dates for the user to choose from
+def showPossibleDates(possibleDates):
+        print("\nAvailable option expiry dates are:")
+        #initializes the counting variable
+        count = 0  
+        #runs a for loop that outputs the dates, formatted properly
+        for dates in possibleDates:
+            count = count + 1
+            print('For ' + dates + ' enter:', count)
+        return
